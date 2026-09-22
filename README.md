@@ -1,416 +1,225 @@
-Wi-Fi Certificate GitHub Release Procedure
-Purpose
+# Wi-Fi Certificate GitHub Release Procedure
 
-This procedure documents how to prepare a new Wi-Fi/802.1X certificate, generate its SHA-256 checksum, and publish both files as a GitHub Release for deployment through Jamf Pro.
+This repository documents the standard operational procedure for preparing, validating, and publishing new Wi-Fi/802.1X certificates and their SHA-256 checksums as GitHub Releases for deployment via Jamf Pro.
 
-The GitHub Release is the source of truth for the certificate version that Jamf should deploy.
+The GitHub Release object serves as the single source of truth for the certificate version deployed across macOS endpoints.
 
-Repository Structure
+---
 
-The repository does not contain a Releases directory.
+## Table of Contents
 
-For example:
+* [Overview & Architecture](https://www.google.com/search?q=%2523overview--architecture&utm_source=gemini)
+* [Naming Conventions & Standards](https://www.google.com/search?q=%2523naming-conventions--standards&utm_source=gemini)
+* [Release Procedure](https://www.google.com/search?q=%2523release-procedure&utm_source=gemini)
+* [1. Prepare Working Directory](https://www.google.com/search?q=%25231-prepare-working-directory&utm_source=gemini)
+* [2. Inspect and Verify Certificate](https://www.google.com/search?q=%25232-inspect-and-verify-certificate&utm_source=gemini)
+* [3. Generate & Verify Checksum](https://www.google.com/search?q=%25233-generate--verify-checksum&utm_source=gemini)
+* [4. Create GitHub Release & Tag](https://www.google.com/search?q=%25234-create-github-release--tag&utm_source=gemini)
+* [5. Upload Assets & Add Release Notes](https://www.google.com/search?q=%25235-upload-assets--add-release-notes&utm_source=gemini)
+* [6. Publish & Verify](https://www.google.com/search?q=%25236-publish--verify&utm_source=gemini)
 
-wifi-certificate
-├── README.md
-└── GitHub Releases
-    ├── v2026.09
-    ├── v2027.03
-    └── v2027.09
 
+* [Release Notes Template](https://www.google.com/search?q=%2523release-notes-template&utm_source=gemini)
+* [Six-Month Rotation Lifecycle](https://www.google.com/search?q=%2523six-month-rotation-lifecycle&utm_source=gemini)
+* [Jamf Pro Integration](https://www.google.com/search?q=%2523jamf-pro-integration&utm_source=gemini)
 
-The releases are GitHub Release objects associated with Git tags. The certificate files are uploaded as Release assets, not committed to the main branch.
+---
 
-1. Prepare the Certificate
+## Overview & Architecture
 
-Obtain the new certificate file.
+Certificates are **not** committed to the Git tree or `main` branch. Instead, they are published exclusively as binary assets attached to tagged GitHub Releases.
 
-The certificate should be named:
-
-access-ise.cccd.edu.cer
-
-
-Place the certificate in a working directory on your Mac.
-
-For example:
-
-mkdir -p ~/Desktop/ise-cert-release
-cd ~/Desktop/ise-cert-release
-
-
-Verify that the certificate is present:
-
-ls -l access-ise.*.cer
-
-2. Verify the Certificate
-
-Before publishing it, inspect the certificate:
-
-openssl x509 -in access-ise.cer -text -noout
-
-
-If the certificate is DER encoded rather than PEM encoded, use:
-
-openssl x509 -inform DER -in access-ise.cer -text -noout
-
-
-Verify the important certificate information, including:
-
-Subject / Common Name
-
-Issuer
-
-Valid From
-
-Valid Until
-
-Key information
-
-For the Wi-Fi certificate, verify that the expected CN is present, such as:
-
-CN=access.ise.example.edu
-
-
-Also verify that the certificate has the expected expiration date.
-
-3. Create the SHA-256 Checksum
-
-From the directory containing access-ise.cer, run:
-
-shasum -a 256 access-ise.cer
-
-
-Example output:
-
-8f7c1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab  access-ise.cer
-
-
-Create the checksum file:
-
-shasum -a 256 access-ise.cer > access-ise.cer.sha256
-
-
-Verify the file:
-
-cat access-ise.cer.sha256
-
-
-It should contain:
-
-8f7c1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab  access-ise.cer
-
-
-The two files that will be uploaded to GitHub are:
-
-access-ise.cer
-access-ise.cer.sha256
-
-4. Verify the Checksum
-
-Before uploading the files, verify the checksum:
-
-shasum -a 256 -c access-ise.cer.sha256
-
-
-Expected result:
-
-access-ise.cer: OK
-
-
-Do not publish the certificate if the checksum verification fails.
-
-5. Determine the Release Version
-
-Use a version based on the certificate rotation period.
-
-For example:
-
-v2026.09
-
-
-The next six-month rotation might be:
-
-v2027.03
-
-
-Then:
-
-v2027.09
-
-
-The v prefix is part of the tag/version.
-
-The release name and tag should normally use the same version:
-
-Release name: v2026.09
-Tag:           v2026.09
-
-6. Create the GitHub Release
-
-Open the organization's GitHub repository.
-
-Navigate to:
-
-Releases → Draft a new release
-
-Choose the tag
-
-Under Choose a tag, enter:
-
-v2026.09
-
-
-If the tag does not already exist, GitHub will provide an option to create the new tag.
-
-Create the tag from the current main branch.
-
-The important relationship is:
-
-main
-  │
-  └── commit
-       │
-       └── tag: v2026.09
-              │
-              └── GitHub Release
-
-
-There is no Releases folder in the repository.
-
-7. Name the Release
-
-Use the same version as the tag.
-
-For example:
-
-v2026.09
-
-
-Alternatively, if additional description is desired:
-
-Wi-Fi Certificate v2026.09
-
-
-For automation, however, keeping the release name and tag consistent is simpler.
-
-Recommended:
-
-Tag:          v2026.09
-Release name: v2026.09
-
-8. Upload the Certificate
-
-In the GitHub Release page, locate the Assets section.
-
-Drag the following two files into the Assets area:
-
-access-ise.cer
-access-ise.cer.sha256
-
-
-The completed release should show:
-
-Assets
-
-access-ise.cer
-access-ise.cer.sha256
-
-
-Do not rename the files between generating the checksum and uploading them.
-
-9. Add Release Notes
-
-Document the certificate information in the release notes.
-
-Example:
-
-Wi-Fi / 802.1X Certificate Rotation
-
-Certificate:
-access-ise.cer
-
-Certificate CN:
-access.ise.example.edu
-
-Issuer:
-InCommon Intermediate CA
-
-Valid From:
-2026-09-01
-
-Valid Until:
-2027-03-01
-
-Purpose:
-Enterprise Wi-Fi 802.1X authentication
-
-Deployment:
-Jamf Pro
-
-SHA-256:
-8f7c1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab
-
-
-The SHA-256 value in the release notes should match the value contained in access-ise.cer.sha256.
-
-10. Verify the Release Before Publishing
-
-Before clicking Publish release, verify:
-
-Release name:
-v2026.09
-
-Tag:
-v2026.09
-
-Target:
-main
-
-Assets:
-access-ise.cer
-access-ise.cer.sha256
-
-
-Also verify:
-
-The certificate is the intended certificate.
-
-The CN is correct.
-
-The issuer is correct.
-
-The expiration date is correct.
-
-The SHA-256 checksum was generated from the exact certificate being uploaded.
-
-shasum -a 256 -c access-ise.cer.sha256 returns OK.
-
-11. Publish the Release
-
-Click:
-
-Publish release
-
-The release is now the current published version.
-
-The repository will contain the release as a GitHub Release associated with the v2026.09 tag.
-
-The certificate itself is a Release asset and is not part of the main branch.
-
-12. Verify the Published Release
-
-After publishing, open the release and verify that both assets are present:
-
-v2026.09
-
-Assets:
-  access-ise.cer
-  access-ise.cer.sha256
-
-
-The release should also show the correct tag:
-
-v2026.09
-
-13. Six-Month Certificate Rotation
-
-When the certificate needs to be replaced, do not modify the previous release.
-
-For the next certificate:
-
-Obtain the new certificate.
-
-Name it access-ise.cer.
-
-Verify the certificate.
-
-Generate a new SHA-256 checksum.
-
-Verify the checksum.
-
-Create a new GitHub tag.
-
-Create a new GitHub Release.
-
-Upload the new access-ise.cer.
-
-Upload the new access-ise.cer.sha256.
-
-Add release notes.
-
-Publish the release.
-
-For example:
-
-Current:
-
-v2026.09
-├── access-ise.cer
-└── access-ise.cer.sha256
-
-
-Six months later:
-
-v2027.03
-├── access-ise.cer
-└── access-ise.cer.sha256
-
-
-The old release remains available for historical reference and rollback.
-
-14. Recommended Naming Standard
-
-Use the following naming convention consistently:
-
-Certificate
-access-ise.cer
-
-Checksum
-access-ise.cer.sha256
-
-Git tag
-vYYYY.MM
-
-
-Examples:
-
-v2026.09
-v2027.03
-v2027.09
-v2028.03
-
-Release name
-
-Use the same value as the tag:
-
-v2026.09
-
-
-This provides a simple and predictable structure for the Jamf deployment script.
-
-15. Final Release Layout
-
-The completed GitHub repository will conceptually contain:
-
-Repository
+```text
+wifi-certificate/
 │
 ├── main branch
 │   └── README.md
 │
-└── GitHub Releases
-    │
-    ├── v2026.09
+└── GitHub Releases (Tagged Commits)
+    ├── v2026.09/
     │   ├── access-ise.cer
     │   └── access-ise.cer.sha256
-    │
-    ├── v2027.03
+    ├── v2027.03/
     │   ├── access-ise.cer
     │   └── access-ise.cer.sha256
-    │
-    └── v2027.09
+    └── v2027.09/
         ├── access-ise.cer
         └── access-ise.cer.sha256
 
+```
 
-The Jamf script will use the latest published GitHub Release as the source of truth for the certificate version. It can compare that release version with the version currently installed on the Mac, download the corresponding certificate and checksum, verify the SHA-256 checksum, remove the old access.ise.*.edu certificates, install the new certificate, and record the deployed version.
+---
 
+## Naming Conventions & Standards
+
+| Component | Standard Format | Example |
+| --- | --- | --- |
+| **Certificate File** | `access-ise.cer` | `access-ise.cer` |
+| **Checksum File** | `access-ise.cer.sha256` | `access-ise.cer.sha256` |
+| **Git Tag** | `vYYYY.MM` | `v2026.09` |
+| **Release Title** | `vYYYY.MM` | `v2026.09` |
+| **Target Branch** | `main` | `main` |
+
+> **Note:** Keep filenames strictly lower-case and matching exact strings. Do not rename files after generating checksums.
+
+---
+
+## Release Procedure
+
+### 1. Prepare Working Directory
+
+Obtain the newly issued certificate, place it on your workstation, and switch to a clean workspace:
+
+```bash
+mkdir -p ~/Desktop/ise-cert-release
+cd ~/Desktop/ise-cert-release
+
+```
+
+Ensure the certificate file is correctly located:
+
+```bash
+ls -l access-ise.cer
+
+```
+
+### 2. Inspect and Verify Certificate
+
+Verify that the subject, issuer, Common Name (CN), and validity dates match expectations before distribution.
+
+For **PEM-encoded** certificates:
+
+```bash
+openssl x509 -in access-ise.cer -text -noout
+
+```
+
+For **DER-encoded** certificates:
+
+```bash
+openssl x509 -inform DER -in access-ise.cer -text -noout
+
+```
+
+**Required Checks:**
+
+* **CN:** Matches `CN=access.ise.example.edu` (or expected wildcard/FQDN pattern).
+* **Validity:** Ensure `Not Before` and `Not After` dates cover the targeted operational window.
+
+### 3. Generate & Verify Checksum
+
+Generate the SHA-256 hash and write it to the payload file:
+
+```bash
+shasum -a 256 access-ise.cer > access-ise.cer.sha256
+
+```
+
+Inspect the output to ensure formatting is clean:
+
+```bash
+cat access-ise.cer.sha256
+
+```
+
+*Example Output:*
+
+```text
+8f7c1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab  access-ise.cer
+
+```
+
+Validate the file pair locally:
+
+```bash
+shasum -a 256 -c access-ise.cer.sha256
+
+```
+
+> **Warning:** Do not proceed if verification returns anything other than `access-ise.cer: OK`.
+
+### 4. Create GitHub Release & Tag
+
+1. Open the repository on GitHub.
+2. Navigate to **Releases** → **Draft a new release**.
+3. Click **Choose a tag**, type the new version tag (e.g., `v2026.09`), and select **Create new tag on publish**.
+4. Ensure the target branch is set to `main`.
+5. Set the **Release title** to match the tag exactly: `v2026.09`.
+
+### 5. Upload Assets & Add Release Notes
+
+Drag and drop the following two files into the **Attach binaries by dropping them here or selecting them** box:
+
+* `access-ise.cer`
+* `access-ise.cer.sha256`
+
+Fill out the release description field using the standardized template below.
+
+### 6. Publish & Verify
+
+1. Review the release parameters:
+* **Tag / Release Title:** `v2026.09`
+* **Target:** `main`
+* **Attached Assets:** `access-ise.cer` and `access-ise.cer.sha256`
+
+
+2. Click **Publish release**.
+3. Re-open the newly published release page to confirm both assets are visible and downloadable.
+
+---
+
+## Release Notes Template
+
+Copy and fill out the template below when drafting the release notes on GitHub:
+
+```markdown
+### Wi-Fi / 802.1X Certificate Rotation
+
+* **Certificate File:** `access-ise.cer`
+* **Common Name (CN):** `access.ise.example.edu`
+* **Issuer:** InCommon Intermediate CA
+* **Valid From:** 2026-09-01
+* **Valid Until:** 2027-03-01
+* **Purpose:** Enterprise Wi-Fi 802.1X authentication
+* **Target Management:** Jamf Pro
+
+#### Checksum (SHA-256)
+`8f7c1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab`
+
+```
+
+---
+
+## Six-Month Rotation Lifecycle
+
+Do **not** overwrite or edit existing releases when rotating certificates. Each rotation requires a new tag and release to maintain audit logs and rollback capacity.
+
+```text
+v2026.09 (Previous)
+├── access-ise.cer
+└── access-ise.cer.sha256
+
+v2027.03 (Active)
+├── access-ise.cer
+└── access-ise.cer.sha256
+
+v2027.09 (Upcoming)
+├── access-ise.cer
+└── access-ise.cer.sha256
+
+```
+
+---
+
+## Jamf Pro Integration
+
+The client-side Jamf deployment script performs the following stateless operations upon execution:
+
+1. Queries the GitHub API (`/releases/latest`) to determine the target tag.
+2. Downloads `access-ise.cer` and `access-ise.cer.sha256` to `/private/tmp/`.
+3. Validates the SHA-256 payload using native macOS utilities (`/usr/bin/shasum`).
+4. Inspects the active user login keychain (`~/Library/Keychains/login.keychain-db`).
+5. Purges any expired certificates matching `access.ise.*.edu`.
+6. Checks if the target SHA-256 fingerprint is already present.
+7. Imports the new certificate via `/usr/bin/security` only if missing.
+8. Cleans up temporary files.
